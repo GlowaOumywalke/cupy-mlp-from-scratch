@@ -15,4 +15,4 @@ def cross_entropy(y: np.ndarray, p: np.ndarray) -> float:
 
 
 def linear_comb(w: np.ndarray, x: np.ndarray) -> float:
-    return np.sum(w * x)
+    return np.dot(w, x)
