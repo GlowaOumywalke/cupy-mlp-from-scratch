@@ -5,8 +5,11 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "cupy-cuda13x>=14.0.0",
     "matplotlib>=3.10.8",
     "numpy>=2.4.2",
+    "nvidia-curand>=10.4.1.81",
     "pygame>=2.6.1",
     "pyqt5>=5.15.11",
+    "tqdm>=4.67.3",
 ]

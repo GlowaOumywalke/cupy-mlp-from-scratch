@@ -1,40 +1,40 @@
-import numpy as np
+import cupy as cp
 
 
-def sigmoid(x: float | np.ndarray) -> np.ndarray:
-    return 1 / (1 + np.exp(-x))
+def sigmoid(x: float | cp.ndarray) -> cp.ndarray:
+    return 1 / (1 + cp.exp(-x))
 
 
-def d_sigmoid(x: float | np.ndarray) -> float | np.ndarray:
+def d_sigmoid(x: float | cp.ndarray) -> float | cp.ndarray:
     s = sigmoid(x)
-    return s * (s - 1)
+    return s * (1 - s)
 
 
-def softmax(x: np.ndarray) -> np.ndarray:
-    dem = np.sum([np.exp(xi) for xi in x])
-    return np.exp(x) / dem
+def softmax(x: cp.ndarray) -> cp.ndarray:
+    dem = cp.sum([cp.exp(xi) for xi in x])
+    return cp.exp(x) / dem
 
 
-def mat_softmax(X: np.ndarray) -> np.ndarray:
-    dem = np.sum(np.exp(X), axis=1, keepdims=True)
-    return np.exp(X) / dem
+def mat_softmax(X: cp.ndarray) -> cp.ndarray:
+    dem = cp.sum(cp.exp(X), axis=1, keepdims=True)
+    return cp.exp(X) / dem
 
 
-def cross_entropy(Y: np.ndarray, X: np.ndarray) -> float:
+def cross_entropy(Y: cp.ndarray, X: cp.ndarray) -> float:
     """
     Y - one-hot expected, Y.shape = (batch_size, n_classes)
     X - predictions,      X.shape = (batch_size, n_classes)
     """
     X = mat_softmax(X)
     eps = 1e-10
-    X = np.clip(X, eps, 1)
-    return np.mean(-np.sum(Y * np.log(X), axis=1))
+    X = cp.clip(X, eps, 1)
+    return cp.mean(-cp.sum(Y * cp.log(X), axis=1))
 
 
-def d_cross_entropy(Y: np.ndarray, X: np.ndarray) -> np.ndarray:
+def d_cross_entropy(Y: cp.ndarray, X: cp.ndarray) -> cp.ndarray:
     X = mat_softmax(X)
     return (X - Y) / Y.shape[0]
 
 
-def sgd(X: np.ndarray, X_grad: np.ndarray, lr: float) -> np.ndarray:
+def sgd(X: cp.ndarray, X_grad: cp.ndarray, lr: float) -> cp.ndarray:
     return X - lr * X_grad

@@ -11,3 +11,5 @@ wheels/
 
 src/test.py
 src/draw_test.py
+src/model.py
+src/cupy_test
