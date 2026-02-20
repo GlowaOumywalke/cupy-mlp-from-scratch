@@ -25,7 +25,7 @@ def main():
         help="Path to the .npz file containing 'x_train', 'y_train', 'x_test', 'y_test'",
     )
     args = p.parse_args()
-    path = args.p
+    path = args.path
 
     # data loading
     with np.load(path) as data:

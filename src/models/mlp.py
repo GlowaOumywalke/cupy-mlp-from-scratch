@@ -305,7 +305,7 @@ class MLP:
 
         if save_dir:
             layers_data = {
-                f"layer{i + 1}": {
+                f"layer_{i + 1}": {
                     "weights": self.layers[i].weights,
                     "bias": self.layers[i].bias,
                     "act": self.layers[i].act_func_name,
@@ -391,15 +391,16 @@ class MLP:
         """
         model = cls()
 
-        saved_model = np.load(file_path)
+        saved_model = np.load(file_path, allow_pickle=True)
 
-        model.set_input_size(saved_model["layer_1"]["weights"].shape[1])
+        first_l = saved_model["layer_1"].item()
+        model.set_input_size(first_l["weights"].shape[1])
         for i in range(len(saved_model.files)):
-            layer = saved_model[f"layer_{i + 1}"]
+            layer = saved_model[f"layer_{i + 1}"].item()
             model.add_layer(layer["weights"].shape[0], layer["act"])
 
         for i in range(len(model.layers)):
-            layer = saved_model[f"layer_{i + 1}"]
+            layer = saved_model[f"layer_{i + 1}"].item()
             model.layers[i].weights = cp.array(layer["weights"])
             model.layers[i].bias = cp.array(layer["bias"])
 

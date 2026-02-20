@@ -5,16 +5,7 @@ import cupy as cp
 from src.models.mlp import MLP
 
 # model
-weights = np.load("model/weights.npz")
-biases = np.load("model/bias.npz")
-w_list = [cp.asarray(weights[f"layer{i}"]) for i in range(len(weights.files))]
-b_list = [cp.asarray(biases[f"layer{i}"]) for i in range(len(biases.files))]
-
-model = MLP()
-model.set_input_size(28 * 28)
-model.add_layer(128, "relu")
-model.add_layer(64, "relu")
-model.add_layer(10, "softmax")
+model = MLP.load_model("model/model.npz", "cross_entropy")
 
 # pygame stuff
 pygame.init()
@@ -78,7 +69,7 @@ while True:
         img_gray = np.dot(img_array[..., :3], [0.299, 0.587, 0.114])
         img_gray /= 255
         img_flat = img_gray.reshape(1, 28 * 28)
-        pred_vec = model.predict(cp.asarray(img_flat), w_list, b_list)
+        pred_vec = model.predict(cp.asarray(img_flat))
         pred = cp.argmax(pred_vec)
         print("--" * 20)
         print(f"Predicted value: {pred}")
