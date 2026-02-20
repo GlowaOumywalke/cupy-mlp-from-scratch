@@ -98,6 +98,7 @@ class MLP:
                 n_neurons,
                 self.act_funcs[act_func][0],
                 self.act_funcs[act_func][1],
+                act_func,
             )
         )
         self.params["activation_last"] = act_func
@@ -301,15 +302,17 @@ class MLP:
             pbar.set_description(f"Epoch: {i + 1}, Avg Loss: {curr_loss:.4f}")
 
         self.test(x_test, y_test)
-        layers_weight = {
-            f"layer{i}": self.layers[i].weights for i in range(len(self.layers))
-        }
-        layers_bias = {
-            f"layer{i}": self.layers[i].bias for i in range(len(self.layers))
-        }
+
         if save_dir:
-            cp.savez(f"{save_dir}weights.npz", **layers_weight)
-            cp.savez(f"{save_dir}bias.npz", **layers_bias)
+            layers_data = {
+                f"layer{i + 1}": {
+                    "weights": self.layers[i].weights,
+                    "bias": self.layers[i].bias,
+                    "act": self.layers[i].act_func_name,
+                }
+                for i in range(len(self.layers))
+            }
+            cp.savez(f"{save_dir}model.npz", **layers_data)
 
     def test(self, x_test: cp.ndarray, y_test: cp.ndarray) -> None:
         """
@@ -366,6 +369,47 @@ class MLP:
 
         return x
 
+    @classmethod
+    def load_model(cls, file_path: str, loss_function: str) -> "MLP":
+        """
+        Loads a saved MLP model from a file.
+
+        This method instantiates a new MLP, restores its layers, weights,
+        biases, and activation functions based on the saved data.
+
+        Args:
+            file_path (str): Path to the saved model file.
+            loss_function (str): Name of the loss function to be used for
+                further training or evaluation.
+
+        Returns:
+            MLP: A fully initialized and populated instance of the MLP class.
+
+        Note:
+            The saved file must contain keys formatted as 'layer_1', 'layer_2', etc.,
+            each storing a dictionary with 'weights', 'bias', and 'act'.
+        """
+        model = cls()
+
+        saved_model = np.load(file_path)
+
+        model.set_input_size(saved_model["layer_1"]["weights"].shape[1])
+        for i in range(len(saved_model.files)):
+            layer = saved_model[f"layer_{i + 1}"]
+            model.add_layer(layer["weights"].shape[0], layer["act"])
+
+        for i in range(len(model.layers)):
+            layer = saved_model[f"layer_{i + 1}"]
+            model.layers[i].weights = cp.array(layer["weights"])
+            model.layers[i].bias = cp.array(layer["bias"])
+
+        model.params["loss_func"] = loss_function
+        model.loss_func = model.loss_funcs[loss_function][0]
+        model.loss_func_d = model.loss_funcs[loss_function][1]
+        model.params["activation_last"] = model.layers[-1].act_func_name
+
+        return model
+
 
 class Layer:
     def __init__(
@@ -374,6 +418,7 @@ class Layer:
         n_neur: int,
         act_func: Callable[[cp.ndarray], cp.ndarray],
         act_func_d: Callable[[cp.ndarray], cp.ndarray],
+        act_func_name: str,
     ) -> None:
         """
         Initializes a neural network layer.
@@ -383,11 +428,13 @@ class Layer:
             n_neur (int): Number of neurons in this layer.
             act_func (Callable): Activation function.
             act_func_d (Callable): Derivative of the activation function.
+            act_func_name (str): Name of the activation function. Used to save the model.
         """
         self.weights = cp.random.randn(n_neur, n_in) * cp.sqrt(2 / n_in)
         self.bias = cp.zeros(n_neur)
         self.act_func = act_func
         self.act_func_d = act_func_d
+        self.act_func_name = act_func_name
 
     def forward(self, x: cp.ndarray) -> tuple[cp.ndarray, cp.ndarray]:
         """
