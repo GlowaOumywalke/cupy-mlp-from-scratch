@@ -39,6 +39,34 @@ def mat_softmax(X: cp.ndarray) -> cp.ndarray:
     return X_exp / dem
 
 
+def MSE(Y: cp.ndarray, X: cp.ndarray) -> float:
+    """
+    Computes the Mean Squared Error (MSE) loss.
+
+    Args:
+        Y (cp.ndarray): Ground truth labels (one-hot or continuous). Shape: (batch, n_features).
+        X (cp.ndarray): Predicted values. Shape: (batch, n_features).
+
+    Returns:
+        float: The average squared difference between predictions and targets.
+    """
+    return cp.mean(cp.sum((X - Y) ** 2, axis=1))
+
+
+def d_MSE(Y: cp.ndarray, X: cp.ndarray) -> cp.ndarray:
+    """
+    Computes the gradient of the MSE loss with respect to the predictions.
+
+    Args:
+        Y (cp.ndarray): Ground truth labels. Shape: (batch, n_features).
+        X (cp.ndarray): Predicted values. Shape: (batch, n_features).
+
+    Returns:
+        cp.ndarray: Gradient matrix of the same shape as X.
+    """
+    return 2 * (X - Y) / Y.shape[0]
+
+
 def cross_entropy(Y: cp.ndarray, X: cp.ndarray) -> float:
     """
     Computes Categorical Cross-Entropy loss.

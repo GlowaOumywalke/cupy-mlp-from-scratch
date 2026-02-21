@@ -4,7 +4,9 @@ from tqdm import tqdm
 from typing import Callable
 from src.preprocessing import one_hot
 from src.utils import (
+    MSE,
     adam,
+    d_MSE,
     d_cross_entropy,
     d_sigmoid,
     mat_softmax,
@@ -33,7 +35,10 @@ class MLP:
             "linear": [lambda x: x, lambda x: np.ones_like(x)],
             "softmax": [mat_softmax, None],
         }
-        self.loss_funcs = {"cross_entropy": [cross_entropy, d_cross_entropy]}
+        self.loss_funcs = {
+            "cross_entropy": [cross_entropy, d_cross_entropy],
+            "mse": [MSE, d_MSE],
+        }
         self.optimizers = {"sgd": sgd, "adam": adam}
         self.params = {
             "batch_size": 1,
