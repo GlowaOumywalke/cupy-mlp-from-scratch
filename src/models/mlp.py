@@ -358,7 +358,7 @@ class MLP:
         Returns:
             cp.ndarray: The output of the model.
         """
-        if weights and bias:
+        if weights is not None and bias is not None:
             assert len(weights) == len(self.layers), "Invalid weights size"
             for i in range(len(weights)):
                 self.layers[i].weights = weights[i]
